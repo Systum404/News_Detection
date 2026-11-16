@@ -1,37 +1,59 @@
-# Virtual Environment
+# Python Bytecode & Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.coverage
+coverage/
+
+# Virtual Environments
 .venv/
 venv/
 ENV/
 env/
 
-# Reflex build artifacts & databases
-.web/
-.states/
-*.db
-
-# Python bytecode & cache
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.pytest_cache/
-
-# Static external assets
-assets/external/
-
-# Environment files
+# Environment Variables & Secrets
 .env
 .env.*
+!.env.example
+
+# Reflex Framework Runtime & Ephemeral States
+.web/
+.states/
+
+# Persistent SQLite Databases & Cache
+data/
+*.db
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+reflex.db
+
+# Frontend (Next.js & Node)
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+frontend/build/
+frontend/next-env.d.ts
 
 # Logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
 
-# IDE & Editor folders
+# Static External Uploads / Assets
+assets/external/
+
+# IDE & Operating System Files
+.DS_Store
+Thumbs.db
 .vscode/
 .idea/
 *.swp
 *.swo
-
-# OS files
-.DS_Store
-Thumbs.db

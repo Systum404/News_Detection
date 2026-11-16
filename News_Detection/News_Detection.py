@@ -1,232 +1,17 @@
+import logging
 import reflex as rx
-from transformers import pipeline
-from typing import Optional, Tuple, Dict, Any
 
-# --- AI ENSEMBLE CONFIGURATION (LAZY-LOADED) ---
-print("--- INITIALIZING ENSEMBLE FAKE NEWS DETECTION SYSTEM ---")
+from .ensemble import (
+    pipe1,
+    pipe2,
+    pipe3,
+    get_pipes,
+    are_models_loaded,
+    extract_model_probabilities,
+    analyze_text,
+)
 
-pipe1 = None  # RoBERTa Base
-pipe2 = None  # Distilled TinyBERT
-pipe3 = None  # BERT-Detect
-fact_checker = None  # Zero-shot NLI fact verification
-classifier = None  # Backward-compatibility alias
-
-
-def get_pipes() -> Tuple[object, object, object]:
-    global pipe1, pipe2, pipe3
-    if pipe1 is None:
-        print("1. Loading RoBERTa Base Model (hamzab/roberta-fake-news-classification)...")
-        pipe1 = pipeline("text-classification", model="hamzab/roberta-fake-news-classification")
-    if pipe2 is None:
-        print("2. Loading Distilled TinyBERT Model (mrm8488/bert-tiny-finetuned-fake-news-detection)...")
-        pipe2 = pipeline("text-classification", model="mrm8488/bert-tiny-finetuned-fake-news-detection")
-    if pipe3 is None:
-        print("3. Loading BERT-Detect Model (jy46604790/Fake-News-Bert-Detect)...")
-        pipe3 = pipeline("text-classification", model="jy46604790/Fake-News-Bert-Detect")
-    print("--- ENSEMBLE SYSTEM READY ---")
-    return pipe1, pipe2, pipe3
-
-
-def get_fact_checker():
-    global fact_checker
-    if fact_checker is None:
-        print("Loading Smart Fact Verification Model (facebook/bart-large-mnli)...")
-        fact_checker = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
-    return fact_checker
-
-
-def are_models_loaded() -> bool:
-    return all(p is not None for p in (pipe1, pipe2, pipe3))
-
-
-def analyze_text(
-    text: str,
-    categories: Optional[str] = None,
-    pipes: Optional[Tuple[object, object, object]] = None,
-) -> Dict[str, Any]:
-    global pipe1, pipe2, pipe3
-
-    sanitized = text.strip() if text else ""
-    if not sanitized:
-        raise ValueError("Article text cannot be empty.")
-
-    words = sanitized.split()
-    is_short = len(words) < 15
-
-    # Short query (< 15 words): Evaluate with Smart Fact Verification layer
-    if is_short:
-        fc = get_fact_checker()
-        c_set = ["common knowledge and true", "conspiracy theory or falsehood"]
-        f_res = fc(sanitized, candidate_labels=c_set)
-        top_fact = f_res["labels"][0]
-        fact_score = float(f_res["scores"][0])
-        is_fact_true = (top_fact == c_set[0]) and (fact_score >= 0.55)
-
-        score_str = f"{fact_score * 100:.1f}%"
-        snippet = sanitized[:60] + "..." if len(sanitized) > 60 else sanitized
-
-        if is_fact_true:
-            final_res = "AUTHENTIC FACT"
-            final_color = "text-emerald-400"
-            bg_glow = "shadow-emerald-500/20"
-            bar_color = "bg-emerald-500"
-            raw_color = "#34d399"
-            final_conf = f"Fact Check Score ({score_str})"
-            bar_width = f"{fact_score * 100:.0f}%"
-
-            return {
-                "result": final_res,
-                "is_fake": False,
-                "verdict": "AUTHENTIC",
-                "confidence": final_conf,
-                "agreement": "Fact Check",
-                "bar_width": bar_width,
-                "bar_color": bar_color,
-                "color": final_color,
-                "bg_glow": bg_glow,
-                "raw_color": raw_color,
-                "snippet": snippet,
-                "is_short": True,
-                "vote1": "AUTHENTIC (Fact Verified)",
-                "score1": score_str,
-                "is_fake1": False,
-                "vote2": "AUTHENTIC (Fact Verified)",
-                "score2": score_str,
-                "is_fake2": False,
-                "vote3": "AUTHENTIC (Fact Verified)",
-                "score3": score_str,
-                "is_fake3": False,
-                "label1": "AUTHENTIC",
-                "label2": "AUTHENTIC",
-                "label3": "AUTHENTIC",
-            }
-        else:
-            final_res = "FALSEHOOD / FAKE CLAIM"
-            final_color = "text-red-400"
-            bg_glow = "shadow-red-500/20"
-            bar_color = "bg-red-500"
-            raw_color = "#f87171"
-            final_conf = f"Fact Check Score ({score_str})"
-            bar_width = f"{fact_score * 100:.0f}%"
-
-            return {
-                "result": final_res,
-                "is_fake": True,
-                "verdict": "FAKE",
-                "confidence": final_conf,
-                "agreement": "Fact Check",
-                "bar_width": bar_width,
-                "bar_color": bar_color,
-                "color": final_color,
-                "bg_glow": bg_glow,
-                "raw_color": raw_color,
-                "snippet": snippet,
-                "is_short": True,
-                "vote1": "FAKE (Fact Flagged)",
-                "score1": score_str,
-                "is_fake1": True,
-                "vote2": "FAKE (Fact Flagged)",
-                "score2": score_str,
-                "is_fake2": True,
-                "vote3": "FAKE (Fact Flagged)",
-                "score3": score_str,
-                "is_fake3": True,
-                "label1": "FAKE",
-                "label2": "FAKE",
-                "label3": "FAKE",
-            }
-
-    # For full news text (>= 15 words): Run the 3-Model Transformer Ensemble
-    if pipes is not None:
-        p1, p2, p3 = pipes
-    else:
-        p1, p2, p3 = get_pipes()
-
-    # Truncate text cleanly for context window
-    truncated_text = sanitized[:2000]
-
-    # Model 1: RoBERTa Base (hamzab/roberta-fake-news-classification)
-    # Outputs: 'FAKE' or 'TRUE'
-    res1 = p1(truncated_text, truncation=True, max_length=512)[0]
-    label1_raw = str(res1.get("label", "")).upper()
-    score1_val = float(res1.get("score", 0.0))
-    is_fake1 = "FAKE" in label1_raw
-    vote1 = "FAKE" if is_fake1 else "AUTHENTIC"
-    score1_str = f"{score1_val * 100:.1f}%"
-
-    # Model 2: Distilled TinyBERT (mrm8488/bert-tiny-finetuned-fake-news-detection)
-    # Outputs: LABEL_1 (FAKE), LABEL_0 (REAL)
-    res2 = p2(truncated_text, truncation=True, max_length=512)[0]
-    label2_raw = str(res2.get("label", "")).upper()
-    score2_val = float(res2.get("score", 0.0))
-    is_fake2 = label2_raw == "LABEL_1"
-    vote2 = "FAKE" if is_fake2 else "AUTHENTIC"
-    score2_str = f"{score2_val * 100:.1f}%"
-
-    # Model 3: BERT-Detect (jy46604790/Fake-News-Bert-Detect)
-    # Outputs: LABEL_0 (FAKE), LABEL_1 (REAL)
-    res3 = p3(truncated_text, truncation=True, max_length=512)[0]
-    label3_raw = str(res3.get("label", "")).upper()
-    score3_val = float(res3.get("score", 0.0))
-    is_fake3 = label3_raw == "LABEL_0"
-    vote3 = "FAKE" if is_fake3 else "AUTHENTIC"
-    score3_str = f"{score3_val * 100:.1f}%"
-
-    # Majority Voting Logic
-    votes = [vote1, vote2, vote3]
-    fake_count = votes.count("FAKE")
-    authentic_count = votes.count("AUTHENTIC")
-    is_fake = fake_count >= 2
-
-    if is_fake:
-        final_res = "FAKE NEWS DETECTED"
-        final_color = "text-red-400"
-        bg_glow = "shadow-red-500/20"
-        bar_color = "bg-red-500"
-        raw_color = "#f87171"
-        agreement = fake_count
-    else:
-        final_res = "AUTHENTIC NEWS"
-        final_color = "text-emerald-400"
-        bg_glow = "shadow-emerald-500/20"
-        bar_color = "bg-emerald-500"
-        raw_color = "#34d399"
-        agreement = authentic_count
-
-    conf_pct = (agreement / 3.0) * 100.0
-    final_conf = f"{agreement}/3 Models ({conf_pct:.1f}%)"
-    bar_width = f"{conf_pct:.0f}%"
-
-    snippet = sanitized[:60] + "..." if len(sanitized) > 60 else sanitized
-
-    return {
-        "result": final_res,
-        "is_fake": is_fake,
-        "verdict": "FAKE" if is_fake else "AUTHENTIC",
-        "confidence": final_conf,
-        "agreement": f"{agreement}/3",
-        "bar_width": bar_width,
-        "bar_color": bar_color,
-        "color": final_color,
-        "bg_glow": bg_glow,
-        "raw_color": raw_color,
-        "snippet": snippet,
-        "is_short": False,
-        # Model details
-        "vote1": vote1,
-        "score1": score1_str,
-        "is_fake1": is_fake1,
-        "vote2": vote2,
-        "score2": score2_str,
-        "is_fake2": is_fake2,
-        "vote3": vote3,
-        "score3": score3_str,
-        "is_fake3": is_fake3,
-        # Backward-compatible labels
-        "label1": vote1,
-        "label2": vote2,
-        "label3": vote3,
-    }
+logger = logging.getLogger("news_detection.reflex")
 
 
 class State(rx.State):
@@ -253,6 +38,12 @@ class State(rx.State):
     is_fake3: bool = False
     is_short_text: bool = False
 
+    # Multilingual State
+    detected_lang: str = "English"
+    lang_code: str = "en"
+    is_multilingual: bool = False
+    routing_engine: str = "3-Model Deep Learning Ensemble"
+
     # History entries: [snippet, result, is_fake_str ("true"/"false"), confidence_score]
     history: list[list[str]] = []
 
@@ -276,6 +67,10 @@ class State(rx.State):
         self.score3 = ""
         self.is_fake3 = False
         self.is_short_text = False
+        self.detected_lang = "English"
+        self.lang_code = "en"
+        self.is_multilingual = False
+        self.routing_engine = "3-Model Deep Learning Ensemble"
 
     def load_sample_real(self):
         self.news_content = (
@@ -290,6 +85,24 @@ class State(rx.State):
         self.news_content = (
             "BREAKING EXCLUSIVE: Secret government underground base discovered where alien "
             "technology is being used to control international weather patterns and manipulate elections!"
+        )
+        self.result = ""
+        self.status_type = ""
+        self.is_short_text = False
+
+    def load_sample_hindi(self):
+        self.news_content = (
+            "नई दिल्ली: भारतीय अंतरिक्ष अनुसंधान संगठन (ISRO) ने आज अपने महत्वपूर्ण मौसम उपग्रह का "
+            "सफल प्रक्षेपण श्रीहरिकोटा से किया, जिससे वैज्ञानिक समुदाय में नई उपलब्धि दर्ज हुई।"
+        )
+        self.result = ""
+        self.status_type = ""
+        self.is_short_text = False
+
+    def load_sample_spanish(self):
+        self.news_content = (
+            "MADRID (EFE) - El Ministerio de Economía anunció hoy medidas fiscales para contener "
+            "la inflación y respaldar la producción industrial durante el próximo trimestre."
         )
         self.result = ""
         self.status_type = ""
@@ -334,13 +147,19 @@ class State(rx.State):
             self.score3 = res["score3"]
             self.is_fake3 = res["is_fake3"]
 
+            self.detected_lang = res.get("language_name", "English")
+            self.lang_code = res.get("language_code", "en")
+            self.is_multilingual = res.get("is_multilingual", False)
+            self.routing_engine = res.get("routing_engine", "3-Model Deep Learning Ensemble")
+
             snippet = res["snippet"]
             is_fake_str = "true" if is_fake else "false"
             self.history.insert(0, [snippet, res["result"], is_fake_str, res["confidence"]])
+            self.history = self.history[:50]
         except Exception as e:
             self.result = f"System Error: {e}"
             self.status_type = "warning"
-            print(f"Error during analysis: {e}")
+            logger.exception(f"Error during analysis: {e}")
         finally:
             self.loading = False
 
@@ -353,11 +172,11 @@ def header_component():
                 class_name="text-[11px] font-extrabold tracking-widest text-indigo-400 uppercase bg-indigo-500/10 border border-indigo-500/30 px-3 py-1 rounded-full w-fit mb-3",
             ),
             rx.heading(
-                "Veritas",
+                "News Detection",
                 class_name="text-5xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 via-purple-300 to-pink-300",
             ),
             rx.text(
-                "Multi-Model Deep Learning Fake News Detection System",
+                "Multi-Model Deep Learning System",
                 class_name="text-gray-400 mt-2 text-base font-medium",
             ),
             class_name="w-full",
@@ -429,19 +248,19 @@ def results_dashboard():
                         ),
                     ),
                 ),
-                # Smart Fact Verification Notice
+                # Short Claim Mode Notice
                 rx.cond(
                     State.is_short_text & ((State.status_type == "fake") | (State.status_type == "authentic")),
                     rx.box(
                         rx.hstack(
-                            rx.icon(tag="sparkles", class_name="h-4 w-4 text-cyan-400 shrink-0 mt-0.5"),
+                            rx.icon(tag="info", class_name="h-4 w-4 text-cyan-400 shrink-0 mt-0.5"),
                             rx.box(
                                 rx.text(
-                                    "Smart Fact-Checking Active (< 15 words):",
+                                    "Headline / Short Claim Mode (< 15 words):",
                                     class_name="text-xs font-bold text-cyan-300 mb-0.5",
                                 ),
                                 rx.text(
-                                    "Short factual claims are verified using our Zero-Shot NLI Factuality Layer. Full news articles (>= 15 words) utilize the 3-model Transformer Ensemble.",
+                                    "All 3 neural networks evaluated this claim based on headline veracity and linguistic patterns. Note: Full articles provide richer contextual cues.",
                                     class_name="text-xs text-cyan-200/90 leading-relaxed",
                                 ),
                             ),
@@ -451,12 +270,37 @@ def results_dashboard():
                         class_name="bg-cyan-950/40 border border-cyan-500/30 rounded-xl p-3 mb-6 backdrop-blur-md",
                     ),
                 ),
+                # Detected Language Badge
+                rx.cond(
+                    (State.status_type == "fake") | (State.status_type == "authentic"),
+                    rx.box(
+                        rx.hstack(
+                            rx.hstack(
+                                rx.icon(tag="globe", class_name="h-4 w-4 text-indigo-400 shrink-0"),
+                                rx.text("Detected Language: ", class_name="text-xs text-gray-400 font-medium"),
+                                rx.text(State.detected_lang, class_name="text-xs font-bold text-indigo-300"),
+                                align="center",
+                                spacing="2",
+                            ),
+                            rx.box(
+                                rx.text(
+                                    State.routing_engine,
+                                    class_name="text-[10px] font-mono font-semibold px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-gray-300",
+                                ),
+                            ),
+                            justify="between",
+                            align="center",
+                            width="100%",
+                        ),
+                        class_name="bg-indigo-950/30 border border-indigo-500/20 rounded-xl px-4 py-2.5 mb-6 backdrop-blur-md",
+                    ),
+                ),
                 # Confidence Progress Bar
                 rx.cond(
                     (State.status_type == "fake") | (State.status_type == "authentic"),
                     rx.box(
                         rx.hstack(
-                            rx.text("Ensemble Agreement", class_name="text-sm font-medium text-gray-400"),
+                            rx.text("Consensus Confidence", class_name="text-sm font-medium text-gray-400"),
                             rx.text(State.confidence_score, class_name="text-sm font-bold text-white font-mono"),
                             justify="between",
                             class_name="mb-2",
@@ -563,23 +407,38 @@ def main_content():
             rx.hstack(
                 rx.text("Article Text Content", class_name="text-sm font-semibold text-gray-400 uppercase tracking-widest"),
                 rx.hstack(
-                    rx.text("Try sample:", class_name="text-xs text-gray-500 self-center"),
+                    rx.text("Try sample:", class_name="text-xs text-gray-500 self-center hidden sm:inline"),
                     rx.button(
-                        "Real News",
+                        "Real (EN)",
                         on_click=State.load_sample_real,
                         size="1",
                         variant="surface",
                         class_name="text-xs bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 border border-emerald-500/30 cursor-pointer rounded-md px-2 py-1",
                     ),
                     rx.button(
-                        "Fake News",
+                        "Fake (EN)",
                         on_click=State.load_sample_fake,
                         size="1",
                         variant="surface",
                         class_name="text-xs bg-red-500/10 text-red-300 hover:bg-red-500/20 border border-red-500/30 cursor-pointer rounded-md px-2 py-1",
                     ),
+                    rx.button(
+                        "Hindi (हिंदी)",
+                        on_click=State.load_sample_hindi,
+                        size="1",
+                        variant="surface",
+                        class_name="text-xs bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 border border-amber-500/30 cursor-pointer rounded-md px-2 py-1",
+                    ),
+                    rx.button(
+                        "Spanish (ES)",
+                        on_click=State.load_sample_spanish,
+                        size="1",
+                        variant="surface",
+                        class_name="text-xs bg-purple-500/10 text-purple-300 hover:bg-purple-500/20 border border-purple-500/30 cursor-pointer rounded-md px-2 py-1",
+                    ),
                     spacing="2",
                     align="center",
+                    wrap="wrap",
                 ),
                 justify="between",
                 align="center",
@@ -652,4 +511,4 @@ app = rx.App(
         "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap",
     ],
 )
-app.add_page(index, title="Veritas | Ensemble Fake News Detection")
+app.add_page(index, title="News Detection | AI Ensemble")

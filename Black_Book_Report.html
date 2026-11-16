@@ -235,7 +235,7 @@
     <div class="page page-break">
         <div class="title-page">
             <h3>A Project Report On</h3>
-            <h1>Ensemble Fake News Detection System Using Deep Learning</h1>
+            <h1>Ensemble News Detection System Using Deep Learning</h1>
             <p>Submitted in partial fulfillment of the requirements for the degree of</p>
             <h3>[YOUR DEGREE PROGRAM HERE]</h3>
             
@@ -260,7 +260,7 @@
     <!-- CERTIFICATE -->
     <div class="page page-break">
         <h2>Certificate</h2>
-        <p class="no-indent" style="margin-top: 30px;">This is to certify that the project entitled <b>"Ensemble Fake News Detection System Using Deep Learning"</b> is a bonafide work carried out by <b>[YOUR NAME HERE]</b> under the supervision and guidance of <b>[GUIDE NAME HERE]</b>.</p>
+        <p class="no-indent" style="margin-top: 30px;">This is to certify that the project entitled <b>"Ensemble News Detection System Using Deep Learning"</b> is a bonafide work carried out by <b>[YOUR NAME HERE]</b> under the supervision and guidance of <b>[GUIDE NAME HERE]</b>.</p>
         <p class="no-indent">The project is submitted towards the partial fulfillment of the requirement for the award of the degree of <b>[YOUR DEGREE PROGRAM]</b> from <b>[YOUR UNIVERSITY NAME]</b>.</p>
         
         <div style="display: flex; justify-content: space-between; margin-top: 150px;">
@@ -295,7 +295,7 @@
             <tr style="border: none;"><td style="border: none; padding: 4px; padding-left: 20px;">1.3 Problem Statement</td><td style="border: none; text-align: right;"></td></tr>
             <tr style="border: none;"><td style="border: none; padding: 4px; padding-left: 20px;">1.4 Scope and Objectives</td><td style="border: none; text-align: right;"></td></tr>
             <tr style="border: none;"><td style="border: none; padding: 4px;"><b>Chapter 2: Literature Review</b></td><td style="border: none; text-align: right;">4</td></tr>
-            <tr style="border: none;"><td style="border: none; padding: 4px; padding-left: 20px;">2.1 History of Fake News Detection</td><td style="border: none; text-align: right;"></td></tr>
+            <tr style="border: none;"><td style="border: none; padding: 4px; padding-left: 20px;">2.1 History of News Detection</td><td style="border: none; text-align: right;"></td></tr>
             <tr style="border: none;"><td style="border: none; padding: 4px; padding-left: 20px;">2.2 Evaluation of Existing Systems</td><td style="border: none; text-align: right;"></td></tr>
             <tr style="border: none;"><td style="border: none; padding: 4px; padding-left: 20px;">2.3 The Shift to Transformer Models</td><td style="border: none; text-align: right;"></td></tr>
             <tr style="border: none;"><td style="border: none; padding: 4px;"><b>Chapter 3: System Analysis & Planning</b></td><td style="border: none; text-align: right;">8</td></tr>
@@ -327,7 +327,7 @@
         
         <p>Traditional manual fact-checking organizations, while highly accurate, are fundamentally unscalable and too slow to combat the sheer volume and velocity of data generated daily on platforms like X (formerly Twitter), Facebook, and Reddit. Consequently, there is an urgent and critical need for automated computational solutions capable of classifying the veracity of news articles in near real-time.</p>
         
-        <p>This project proposes a highly scalable, robust, and accurate <b>Ensemble Fake News Detection System</b> leveraging advanced Deep Learning architectures and modern Natural Language Processing (NLP) techniques. Recognizing that single machine learning models are inherently susceptible to specific dataset biases and localized failures, this system pivots to an ensemble methodology. It integrates three pre-trained state-of-the-art transformer neural networks: <b>RoBERTa (Robustly Optimized BERT Pretraining Approach)</b>, <b>TinyBERT (Distilled BERT)</b>, and <b>Bert-Detect</b>. By aggregating the respective predictions of these distinct computational models using a weighted majority-voting mechanism, the system effectively neutralizes individual algorithmic biases and dramatically increases overall detection confidence, precision, and recall.</p>
+        <p>This project proposes a highly scalable, robust, and accurate <b>Ensemble News Detection System</b> leveraging advanced Deep Learning architectures and modern Natural Language Processing (NLP) techniques. Recognizing that single machine learning models are inherently susceptible to specific dataset biases and localized failures, this system pivots to an ensemble methodology. It integrates three pre-trained state-of-the-art transformer neural networks: <b>RoBERTa (Robustly Optimized BERT Pretraining Approach)</b>, <b>TinyBERT (Distilled BERT)</b>, and <b>Bert-Detect</b>. By aggregating the respective predictions of these distinct computational models using a weighted majority-voting mechanism, the system effectively neutralizes individual algorithmic biases and dramatically increases overall detection confidence, precision, and recall.</p>
         
         <p>The backend infrastructure is robustly built using Python and the Hugging Face Transformers library, exposed via a fast asynchronous FastAPI service. To bridge the gap between complex artificial intelligence and end-user accessibility, the user interface is developed using the modern Reflex web framework, richly styled with Tailwind CSS. This provides end-users with a premium, responsive, glassmorphic dashboard to paste extensive articles, visualize the individual neural network verdicts, and view the final ensemble confidence score seamlessly and transparently.</p>
     </div>
@@ -338,7 +338,7 @@
         
         <h3>1.1 Project Overview</h3>
         <p>In the modern digital era, the Internet serves as the primary source of news for billions of individuals globally. The traditional gatekeepers of information, such as established newspaper editors and television producers, have been bypassed by decentralized social media algorithms that prioritize user engagement and emotional outrage over factual accuracy. This systemic flaw in the digital ecosystem has given rise to the widespread phenomenon of Fake News. Fake news can have devastating real-world consequences, ranging from swaying democratic elections and causing catastrophic financial market panics to inciting mob violence and public health crises during global pandemics.</p>
-        <p>This project introduces a Multi-Model Deep Learning Fake News Detection web application designed to act as a computational shield against misinformation. By passing user-inputted news articles through a gauntlet of three distinct neural networks, the system intricately evaluates the linguistic patterns, emotional sentiment, semantic structures, and syntactic context of the text to autonomously determine its authenticity.</p>
+        <p>This project introduces a Multi-Model Deep Learning News Detection web application designed to act as a computational shield against misinformation. By passing user-inputted news articles through a gauntlet of three distinct neural networks, the system intricately evaluates the linguistic patterns, emotional sentiment, semantic structures, and syntactic context of the text to autonomously determine its authenticity.</p>
 
         <h3>1.2 Motivation</h3>
         <p>The motivation behind developing this system stems from the alarming statistics regarding digital literacy and the virality of falsehoods. Studies conducted by the Massachusetts Institute of Technology (MIT) reveal that false news spreads on social media platforms up to six times faster than the truth, and reaches significantly larger audiences. As artificial intelligence tools for generating text (such as Large Language Models like ChatGPT) become widely available, the cost and effort required to generate highly convincing fake news have plummeted to near zero. Therefore, fighting AI-generated misinformation requires specialized, purpose-built AI detection systems capable of identifying synthetic patterns and linguistic anomalies that escape human detection.</p>
@@ -360,7 +360,7 @@
     <div class="page page-break">
         <h1>Chapter 2: Literature Review</h1>
         
-        <h3>2.1 History of Fake News Detection</h3>
+        <h3>2.1 History of News Detection</h3>
         <p>Historically, the detection of fake news and deceptive text relied heavily on manual human intervention by dedicated fact-checkers working for organizations like Snopes, Reuters, and PolitiFact. While highly accurate, human verification is fundamentally limited by cognitive processing speed and working hours. As the volume of data generated on the web grew exponentially, computer scientists began applying early automated systems using basic Machine Learning (ML) algorithms.</p>
         <p>Initial attempts in the early 2010s utilized classical algorithms such as Naive Bayes classifiers, Random Forests, and Support Vector Machines (SVM). These algorithms relied on manual feature engineering and TF-IDF (Term Frequency-Inverse Document Frequency) matrices. They essentially counted the occurrences of specific words to classify a document. However, these "Bag of Words" approaches completely ignored the sequence and context of the words, rendering them highly ineffective against sophisticated, well-written fake news.</p>
 
@@ -495,7 +495,7 @@
     <div class="page page-break">
         <h3>4.3 Data Flow Diagram (DFD)</h3>
         <p>The Data Flow Diagram illustrates how information moves through the system, identifying the processes that transform data and the data stores where information is kept temporarily during the session.</p>
-        <div class="mermaid">
+        <div class="mermaid"> 
         flowchart TD
             U["User Input: Raw String"] --> P1("Process 1: Text Sanitization & Truncation")
             P1 --> D1[/"RAM: Sanitized Token Array"/]
@@ -656,7 +656,7 @@ else:
     <div class="page page-break">
         <h1>Chapter 7: Results and Discussion</h1>
         
-        <p>The deployment of the Ensemble Fake News Detection System yielded highly successful results, successfully meeting all operational objectives outlined in Chapter 1.</p>
+        <p>The deployment of the Ensemble News Detection System yielded highly successful results, successfully meeting all operational objectives outlined in Chapter 1.</p>
         <p>By leveraging the ensemble methodology, the system demonstrated a remarkable ability to catch nuanced misinformation that easily bypassed simpler algorithms. During internal testing, scenarios where the lightweight TinyBERT model incorrectly flagged a sarcastic authentic article as "Fake" were quickly identified and overridden by the more sophisticated RoBERTa and BERT-Detect models, proving the supreme efficacy of the democratic voting architecture.</p>
         
         <h3>7.1 Performance Benchmarks</h3>
@@ -670,7 +670,7 @@ else:
             bar [850, 420, 210]
         </div>
 
-        <h3>7.2 The Veritas Dashboard Home Screen</h3>
+        <h3>7.2 The Dashboard Home Screen</h3>
         <p>The graphical user interface was heavily praised for its modern aesthetic. The application features a sleek, dark-themed dashboard. The main interaction area is centralized, utilizing a glassmorphic design language that draws the user's attention directly to the text input box.</p>
         
         <div class="image-container">
@@ -702,7 +702,7 @@ else:
         <h1>Chapter 8: Conclusion and Future Scope</h1>
         
         <h3>8.1 Conclusion</h3>
-        <p>The Ensemble Fake News Detection System successfully demonstrates that aggregating multiple Deep Learning NLP models yields a significantly more reliable, robust, and trustworthy classification paradigm than relying on a single neural network. By intelligently combining the computational speed of TinyBERT with the deep, nuanced accuracy of RoBERTa, the system successfully mitigates individual dataset biases and reduces false positives.</p>
+        <p>The Ensemble News Detection System successfully demonstrates that aggregating multiple Deep Learning NLP models yields a significantly more reliable, robust, and trustworthy classification paradigm than relying on a single neural network. By intelligently combining the computational speed of TinyBERT with the deep, nuanced accuracy of RoBERTa, the system successfully mitigates individual dataset biases and reduces false positives.</p>
         <p>Furthermore, by wrapping this highly complex, mathematically dense AI logic in a highly intuitive, premium graphical user interface, this project proves that advanced fact-checking tools can be made totally accessible to the general public. The explainable AI (XAI) features—specifically showing the individual model votes—builds trust with the end-user. Ultimately, this system stands as a highly effective, scalable software solution in the ongoing global fight against digital misinformation and malicious fake news campaigns.</p>
 
         <h3>8.2 Future Enhancements</h3>
