@@ -605,7 +605,7 @@ async def read_file_bounded(file: UploadFile, max_bytes: int = MAX_UPLOAD_SIZE_B
     return b"".join(chunks)
 
 
-# --- BATCH PROCESSING ENDPOINTS (ENTERPRISE INGESTION) ---
+# --- BATCH PROCESSING ENDPOINTS (BATCH INGESTION) ---
 
 @app.post("/api/batch/upload", tags=["Batch Processing"])
 async def api_batch_upload(
